@@ -13,6 +13,9 @@ import {
   ChevronRight,
   TrendingDown,
   Activity,
+  CheckCircle2,
+  Lock,
+  Sparkles,
 } from "lucide-react";
 import { Button } from "@/components/Button";
 import {
@@ -84,6 +87,10 @@ export default function HomePage() {
     loadData();
   }, []);
 
+  const hasAppliances = appliances.length > 0;
+  const hasReceipts = receipts.length > 0;
+  const latestReceipt = receipts[0];
+
   return (
     <div className="animate-in fade-in space-y-12 pb-12 duration-500">
       {/* Hero Section */}
@@ -110,19 +117,125 @@ export default function HomePage() {
             фактический счёт и моделирует сценарии экономии в реальном времени.
           </p>
 
-          <div className="flex flex-wrap gap-4 pt-2">
+          {/* Wizard Steps Indicator */}
+          <div className="pt-1">
+            <div className="flex flex-wrap items-center gap-2 text-xs">
+              <span
+                className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 font-medium transition-all ${
+                  hasAppliances
+                    ? "border border-emerald-500/30 bg-emerald-500/10 text-emerald-400"
+                    : "border border-orange-500/40 bg-orange-500/20 text-orange-300 font-semibold ring-1 ring-orange-500/30"
+                }`}
+              >
+                {hasAppliances ? (
+                  <CheckCircle2 className="h-3.5 w-3.5 text-emerald-400" />
+                ) : (
+                  <span className="flex h-4 w-4 items-center justify-center rounded-full bg-orange-500 text-[10px] font-bold text-slate-950">
+                    1
+                  </span>
+                )}
+                1. Приборы {hasAppliances && `(${appliances.length})`}
+              </span>
+
+              <span className="text-slate-600">→</span>
+
+              <span
+                className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 font-medium transition-all ${
+                  !hasAppliances
+                    ? "border border-slate-800 bg-slate-900/50 text-slate-500"
+                    : hasReceipts
+                      ? "border border-emerald-500/30 bg-emerald-500/10 text-emerald-400"
+                      : "border border-orange-500/40 bg-orange-500/20 text-orange-300 font-semibold ring-1 ring-orange-500/30"
+                }`}
+              >
+                {hasReceipts ? (
+                  <CheckCircle2 className="h-3.5 w-3.5 text-emerald-400" />
+                ) : !hasAppliances ? (
+                  <Lock className="h-3.5 w-3.5 text-slate-600" />
+                ) : (
+                  <span className="flex h-4 w-4 items-center justify-center rounded-full bg-orange-500 text-[10px] font-bold text-slate-950">
+                    2
+                  </span>
+                )}
+                2. Квитанция {hasReceipts && `(${receipts.length})`}
+              </span>
+
+              <span className="text-slate-600">→</span>
+
+              <span
+                className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 font-medium transition-all ${
+                  hasAppliances && hasReceipts
+                    ? "border border-amber-500/40 bg-amber-500/20 text-amber-300 font-semibold ring-1 ring-amber-500/30"
+                    : "border border-slate-800 bg-slate-900/50 text-slate-500"
+                }`}
+              >
+                {hasAppliances && hasReceipts ? (
+                  <Sparkles className="h-3.5 w-3.5 text-amber-400" />
+                ) : (
+                  <Lock className="h-3.5 w-3.5 text-slate-600" />
+                )}
+                3. Аудит и симуляция
+              </span>
+            </div>
+          </div>
+
+          {/* Action buttons strictly respecting sequential wizard rules */}
+          <div className="flex flex-wrap items-center gap-4 pt-1">
+            {/* Step 1: Добавить прибор (THE ONLY ONE on page) */}
             <Link href="/appliances/add">
-              <Button size="lg" className="shadow-lg shadow-orange-500/25">
-                <PlusCircle className="mr-1 h-5 w-5" />
+              <Button
+                size="lg"
+                variant={!hasAppliances ? "default" : "outline"}
+                className={!hasAppliances ? "shadow-lg shadow-orange-500/25" : ""}
+              >
+                <PlusCircle className="mr-1.5 h-5 w-5" />
                 Добавить прибор
               </Button>
             </Link>
-            <Link href="/receipts/add">
-              <Button size="lg" variant="secondary">
-                <ReceiptIcon className="mr-1 h-5 w-5 text-orange-400" />
-                Загрузить квитанцию
-              </Button>
-            </Link>
+
+            {/* Step 2: Загрузить квитанцию (disabled if 0 appliances) */}
+            {hasAppliances ? (
+              <Link href="/receipts/add">
+                <Button
+                  size="lg"
+                  variant={!hasReceipts ? "default" : "secondary"}
+                  className={!hasReceipts ? "shadow-lg shadow-orange-500/25" : ""}
+                >
+                  <ReceiptIcon className="mr-1.5 h-5 w-5 text-orange-400" />
+                  Загрузить квитанцию
+                </Button>
+              </Link>
+            ) : (
+              <div className="relative group">
+                <Button
+                  size="lg"
+                  variant="secondary"
+                  disabled
+                  className="cursor-not-allowed opacity-50 border-slate-800"
+                  title="Сначала добавьте хотя бы один прибор"
+                >
+                  <Lock className="mr-1.5 h-4 w-4 text-slate-500" />
+                  Загрузить квитанцию
+                </Button>
+                <span className="block mt-1 text-xs text-amber-400/90 font-medium">
+                  Сначала добавьте хотя бы один прибор
+                </span>
+              </div>
+            )}
+
+            {/* Step 3: Transition to Audit Dashboard (available once both exist) */}
+            {hasAppliances && hasReceipts && latestReceipt && (
+              <Link href={`/dashboard/${latestReceipt.id}`}>
+                <Button
+                  size="lg"
+                  className="bg-gradient-to-r from-orange-500 to-amber-500 text-slate-950 font-bold shadow-lg shadow-orange-500/25 hover:from-orange-400 hover:to-amber-400"
+                >
+                  <Flame className="mr-1.5 h-5 w-5" />
+                  Перейти к аудиту
+                  <ArrowRight className="ml-1.5 h-4 w-4" />
+                </Button>
+              </Link>
+            )}
           </div>
         </div>
 
@@ -158,144 +271,16 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Receipts Section */}
-      <section className="space-y-6">
-        <div className="flex items-center justify-between">
-          <div>
-            <h2 className="flex items-center gap-2.5 text-2xl font-bold tracking-tight text-white">
-              <ReceiptIcon className="h-6 w-6 text-orange-400" />
-              Квитанции и расчёты
-            </h2>
-            <p className="mt-1 text-sm text-slate-400">
-              Выберите квитанцию для просмотра детальной декомпозиции и
-              симулятора экономии
-            </p>
-          </div>
-          <Link href="/receipts/add">
-            <Button variant="outline" size="sm">
-              <PlusCircle className="mr-1.5 h-4 w-4 text-orange-400" />
-              Новая квитанция
-            </Button>
-          </Link>
-        </div>
-
-        {isLoading ? (
-          <div className="grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-3">
-            {[1, 2, 3].map((i) => (
-              <div
-                key={i}
-                className="h-44 animate-pulse rounded-2xl border border-slate-800 bg-slate-900/40 p-6"
-              />
-            ))}
-          </div>
-        ) : receipts.length === 0 ? (
-          <Card className="border-dashed border-slate-800 px-6 py-12 text-center">
-            <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl border border-orange-500/20 bg-orange-500/10 text-orange-400">
-              <ReceiptIcon className="h-7 w-7" />
-            </div>
-            <CardTitle className="text-lg">Нет загруженных квитанций</CardTitle>
-            <CardDescription className="mx-auto mt-2 max-w-md">
-              Загрузите фото квитанции за любой месяц, чтобы Ignis распознал
-              потребление и рассчитал долю каждого прибора.
-            </CardDescription>
-            <Link href="/receipts/add" className="mt-6 inline-block">
-              <Button>
-                <PlusCircle className="mr-1.5 h-4 w-4" />
-                Загрузить первую квитанцию
-              </Button>
-            </Link>
-          </Card>
-        ) : (
-          <div className="grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-3">
-            {receipts.map((receipt) => {
-              const isCalibrated = !!receipt.calibrationCoef;
-              return (
-                <Link
-                  key={receipt.id}
-                  href={`/dashboard/${receipt.id}`}
-                  className="group block transition-transform hover:-translate-y-1 focus:outline-none"
-                >
-                  <Card className="h-full border-slate-800/80 transition-all group-hover:border-orange-500/40 group-hover:shadow-xl group-hover:shadow-orange-500/10">
-                    <CardHeader className="flex flex-row items-center justify-between pb-2">
-                      <div className="flex items-center gap-2 font-semibold text-slate-300">
-                        <Calendar className="h-4 w-4 text-orange-400" />
-                        <span>
-                          {MONTH_NAMES[receipt.periodMonth]}{" "}
-                          {receipt.periodYear}
-                        </span>
-                      </div>
-                      <span
-                        className={`rounded-full border px-2.5 py-0.5 text-[11px] font-semibold ${
-                          isCalibrated
-                            ? "border-emerald-500/30 bg-emerald-500/15 text-emerald-400"
-                            : "border-amber-500/30 bg-amber-500/15 text-amber-400"
-                        }`}
-                      >
-                        {isCalibrated ? "Откалибровано" : "Требует расчёта"}
-                      </span>
-                    </CardHeader>
-
-                    <CardContent className="space-y-4 pt-2">
-                      <div className="grid grid-cols-2 gap-3 pt-2">
-                        <div className="rounded-xl border border-slate-800/60 bg-slate-950/60 p-3">
-                          <span className="block text-[11px] font-medium text-slate-400">
-                            Потребление
-                          </span>
-                          <span className="mt-0.5 block font-mono text-lg font-bold text-white">
-                            {receipt.totalKwh.toLocaleString("ru-RU")}{" "}
-                            <span className="text-xs font-normal text-slate-400">
-                              кВт·ч
-                            </span>
-                          </span>
-                        </div>
-                        <div className="rounded-xl border border-slate-800/60 bg-slate-950/60 p-3">
-                          <span className="block text-[11px] font-medium text-slate-400">
-                            Сумма к оплате
-                          </span>
-                          <span className="mt-0.5 block font-mono text-lg font-bold text-amber-400">
-                            {receipt.totalAmount.toLocaleString("ru-RU", {
-                              maximumFractionDigits: 0,
-                            })}{" "}
-                            <span className="text-xs font-normal">₸ / ₽</span>
-                          </span>
-                        </div>
-                      </div>
-
-                      <div className="flex items-center justify-between border-t border-slate-800/50 pt-2 text-xs text-slate-400 transition-colors group-hover:text-orange-400">
-                        <span>
-                          {isCalibrated
-                            ? "Смотреть декомпозицию"
-                            : "Запустить расчёт"}
-                        </span>
-                        <ChevronRight className="h-4 w-4 transform transition-transform group-hover:translate-x-1" />
-                      </div>
-                    </CardContent>
-                  </Card>
-                </Link>
-              );
-            })}
-          </div>
-        )}
-      </section>
-
       {/* Appliances Quick Overview */}
       <section className="space-y-6">
-        <div className="flex items-center justify-between">
-          <div>
-            <h2 className="flex items-center gap-2.5 text-2xl font-bold tracking-tight text-white">
-              <Zap className="h-6 w-6 text-amber-400" />
-              Мои электроприборы
-            </h2>
-            <p className="mt-1 text-sm text-slate-400">
-              Приборы, участвующие в декомпозиции и калибровке расчётов
-            </p>
-          </div>
-          <Link href="/appliances/add">
-            <Button variant="outline" size="sm">
-              <PlusCircle className="mr-1.5 h-4 w-4 text-amber-400" />
-              Добавить прибор
-            </Button>
-          </Link>
+        <div>
+          <h2 className="flex items-center gap-2.5 text-2xl font-bold tracking-tight text-white">
+            <Zap className="h-6 w-6 text-amber-400" />
+            Мои электроприборы
+          </h2>
+          <p className="mt-1 text-sm text-slate-400">
+            Приборы, участвующие в декомпозиции и калибровке расчётов
+          </p>
         </div>
 
         {isLoading ? (

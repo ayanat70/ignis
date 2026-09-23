@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
@@ -12,6 +12,8 @@ import {
   Zap,
   CreditCard,
   Percent,
+  AlertTriangle,
+  PlusCircle,
 } from "lucide-react";
 import { Button } from "@/components/Button";
 import {
@@ -47,6 +49,22 @@ export default function AddReceiptPage() {
 
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [applianceCount, setApplianceCount] = useState<number | null>(null);
+
+  useEffect(() => {
+    async function checkAppliances() {
+      try {
+        const res = await fetch("/api/appliances");
+        if (res.ok) {
+          const apps = await res.json();
+          setApplianceCount(apps.length);
+        }
+      } catch (err) {
+        console.error("Failed to check appliances:", err);
+      }
+    }
+    checkAppliances();
+  }, []);
 
   const currentYear = new Date().getFullYear();
   const currentMonth = new Date().getMonth() + 1;
@@ -177,8 +195,31 @@ export default function AddReceiptPage() {
         </p>
       </div>
 
+      {applianceCount === 0 && (
+        <Card className="border-amber-500/40 bg-amber-950/20 p-6 text-center shadow-lg">
+          <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-2xl border border-amber-500/30 bg-amber-500/20 text-amber-400">
+            <AlertTriangle className="h-6 w-6" />
+          </div>
+          <h3 className="text-lg font-bold text-white">
+            Сначала добавьте хотя бы один электроприбор
+          </h3>
+          <p className="mx-auto mt-1 max-w-md text-sm text-slate-300">
+            По правилам Ignis, загрузка квитанции возможна только при наличии
+            зарегистрированных приборов для расчёта декомпозиции.
+          </p>
+          <div className="mt-5">
+            <Link href="/appliances/add">
+              <Button>
+                <PlusCircle className="mr-1.5 h-4 w-4" />
+                Добавить прибор (Шаг 1)
+              </Button>
+            </Link>
+          </div>
+        </Card>
+      )}
+
       {/* Upload Box */}
-      <Card>
+      <Card className={applianceCount === 0 ? "opacity-60 pointer-events-none" : ""}>
         <CardContent className="space-y-4 pt-6">
           <div className="flex items-center gap-2 rounded-xl border border-amber-500/20 bg-amber-500/10 p-3 text-xs text-amber-400/90">
             <Sparkles className="h-4 w-4 shrink-0" />
@@ -191,7 +232,7 @@ export default function AddReceiptPage() {
 
           <FileDropzone
             onFileSelected={handlePhotoSelected}
-            disabled={isAnalyzing || isSaving}
+            disabled={isAnalyzing || isSaving || applianceCount === 0}
             label="Перетащите счёт за электричество (JPG, PNG, WEBP, PDF)"
             sublabel="Максимум 10 МБ. Чёткий кадр таблицы расчётов"
           />
@@ -261,7 +302,7 @@ export default function AddReceiptPage() {
               />
 
               <Input
-                label="Сумма к оплате *"
+                label="Сумма к оплате (₸) *"
                 type="number"
                 step="0.01"
                 placeholder="12800"
@@ -270,13 +311,13 @@ export default function AddReceiptPage() {
                   setFormData({ ...formData, totalAmount: e.target.value })
                 }
                 error={errors.totalAmount}
-                helperText="Итого к начислению по квитанции"
+                helperText="Итого к начислению по квитанции в тенге"
                 disabled={isSaving}
               />
 
               <div className="sm:col-span-2">
                 <Input
-                  label="Тариф за 1 кВт·ч (необязательно)"
+                  label="Тариф за 1 кВт·ч (₸, необязательно)"
                   type="number"
                   step="0.001"
                   placeholder="28.41"
@@ -300,7 +341,7 @@ export default function AddReceiptPage() {
               <Button
                 type="submit"
                 isLoading={isSaving}
-                disabled={isSaving || isAnalyzing}
+                disabled={isSaving || isAnalyzing || applianceCount === 0}
                 className="min-w-[160px]"
               >
                 <CheckCircle2 className="mr-1.5 h-4 w-4" />

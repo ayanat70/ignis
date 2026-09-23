@@ -2,15 +2,13 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Flame, PlusCircle, Receipt, LayoutDashboard } from "lucide-react";
+import { Flame, LayoutDashboard } from "lucide-react";
 
 export function Navbar() {
   const pathname = usePathname();
 
   const navLinks = [
     { href: "/", label: "Главная", icon: LayoutDashboard },
-    { href: "/appliances/add", label: "Добавить прибор", icon: PlusCircle },
-    { href: "/receipts/add", label: "Загрузить квитанцию", icon: Receipt },
   ];
 
   return (
