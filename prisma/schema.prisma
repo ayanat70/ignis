@@ -47,6 +47,7 @@ model Appliance {
   model           String?
   category        String?             // например "cooling", "fridge", "heating"
   ratedPowerWatts Float               // P — паспортная мощность
+  flexibility     Float               @default(0.3)
   source          ApplianceSource     @default(MANUAL)
   imageUrl        String?             // фото шильдика, если было
   createdAt       DateTime            @default(now())
