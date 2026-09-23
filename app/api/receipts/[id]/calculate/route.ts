@@ -76,7 +76,10 @@ export async function POST(
       );
     }
 
-    const daysInPeriod = getDaysInPeriod(receipt.periodYear, receipt.periodMonth);
+    const daysInPeriod = getDaysInPeriod(
+      receipt.periodYear,
+      receipt.periodMonth
+    );
 
     // 1. Calculate raw estimate for each appliance
     const rawEstimates = items.map((item) => {
