@@ -7,3 +7,80 @@ datasource db {
   url       = env("DATABASE_URL")
   directUrl = env("DIRECT_URL")
 }
+
+model User {
+  id           String      @id @default(cuid())
+  email        String      @unique
+  passwordHash String
+  name         String?
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+  receipts     Receipt[]
+  appliances   Appliance[]
+}
+
+model Receipt {
+  id              String              @id @default(cuid())
+  userId          String
+  user            User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  periodMonth     Int                 // 1-12
+  periodYear      Int
+  totalKwh        Float               // факт из квитанции
+  totalAmount     Float               // сумма к оплате
+  tariffRate      Float?              // цена за кВт·ч, если известна
+  imageUrl        String?             // ссылка на загруженное фото квитанции
+  ocrRawData      Json?               // сырой ответ от AI/OCR парсинга
+  calibrationCoef Float?              // k_calib, посчитанный после анализа приборов
+  createdAt       DateTime            @default(now())
+  estimates       ApplianceEstimate[]
+
+  @@unique([userId, periodMonth, periodYear])
+  @@index([userId])
+}
+
+model Appliance {
+  id              String              @id @default(cuid())
+  userId          String
+  user            User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name            String              // отображаемое имя, например "Кондиционер спальня"
+  brand           String?
+  model           String?
+  category        String?             // например "cooling", "fridge", "heating"
+  ratedPowerWatts Float               // P — паспортная мощность
+  source          ApplianceSource     @default(MANUAL)
+  imageUrl        String?             // фото шильдика, если было
+  createdAt       DateTime            @default(now())
+  estimates       ApplianceEstimate[]
+
+  @@index([userId])
+}
+
+enum ApplianceSource {
+  PHOTO_LABEL
+  MODEL_NAME
+  MANUAL
+}
+
+model ApplianceEstimate {
+  id             String    @id @default(cuid())
+  applianceId    String
+  appliance      Appliance @relation(fields: [applianceId], references: [id], onDelete: Cascade)
+  receiptId      String
+  receipt        Receipt   @relation(fields: [receiptId], references: [id], onDelete: Cascade)
+  hoursPerDay    Float     // t
+  dutyCycle      Float     @default(1.0) // k_duty, 0-1
+  rawEstimateKwh Float     // до калибровки
+  calibratedKwh  Float?    // после умножения на k_calib
+  priority       Priority  @default(YELLOW)
+  createdAt      DateTime  @default(now())
+
+  @@unique([applianceId, receiptId])
+  @@index([receiptId])
+}
+
+enum Priority {
+  RED
+  ORANGE
+  YELLOW
+  GREEN
+}
