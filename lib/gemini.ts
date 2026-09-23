@@ -60,7 +60,7 @@ export function validateBase64File(imageBase64: string): {
   let mimeType = "image/jpeg";
   let data = imageBase64;
 
-  const match = imageBase64.match(/^data:([^;]+);base64,(.+)$/s);
+  const match = imageBase64.match(/^data:([^;]+);base64,([\s\S]+)$/);
   if (match) {
     mimeType = match[1].toLowerCase().trim();
     data = match[2].trim();

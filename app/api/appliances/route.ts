@@ -9,7 +9,7 @@ const createApplianceSchema = z.object({
   model: z.string().trim().nullable().optional(),
   category: z.string().trim().nullable().optional(),
   ratedPowerWatts: z
-    .number({ invalid_type_error: "ratedPowerWatts должно быть числом" })
+    .number()
     .positive("Мощность ratedPowerWatts должна быть больше нуля"),
   source: z.enum(["PHOTO_LABEL", "MODEL_NAME", "MANUAL"]).default("MANUAL"),
   imageUrl: z.string().nullable().optional(),

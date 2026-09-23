@@ -5,23 +5,23 @@ import { getOrCreateTestUser } from "@/lib/user";
 
 const createReceiptSchema = z.object({
   periodMonth: z
-    .number({ invalid_type_error: "periodMonth должно быть числом" })
+    .number()
     .int("periodMonth должно быть целым числом")
     .min(1, "periodMonth должен быть от 1 до 12")
     .max(12, "periodMonth должен быть от 1 до 12"),
   periodYear: z
-    .number({ invalid_type_error: "periodYear должно быть числом" })
+    .number()
     .int("periodYear должно быть целым числом")
     .min(2000, "periodYear должен быть не меньше 2000")
     .max(2100, "periodYear должен быть не больше 2100"),
   totalKwh: z
-    .number({ invalid_type_error: "totalKwh должно быть числом" })
+    .number()
     .positive("totalKwh должно быть положительным числом"),
   totalAmount: z
-    .number({ invalid_type_error: "totalAmount должно быть числом" })
+    .number()
     .nonnegative("totalAmount не может быть отрицательным"),
   tariffRate: z
-    .number({ invalid_type_error: "tariffRate должно быть числом" })
+    .number()
     .positive("tariffRate должен быть больше нуля")
     .nullable()
     .optional(),

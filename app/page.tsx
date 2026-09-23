@@ -185,7 +185,7 @@ export default function HomePage() {
             <Link href="/appliances/add">
               <Button
                 size="lg"
-                variant={!hasAppliances ? "default" : "outline"}
+                variant={!hasAppliances ? "primary" : "outline"}
                 className={!hasAppliances ? "shadow-lg shadow-orange-500/25" : ""}
               >
                 <PlusCircle className="mr-1.5 h-5 w-5" />
@@ -198,7 +198,7 @@ export default function HomePage() {
               <Link href="/receipts/add">
                 <Button
                   size="lg"
-                  variant={!hasReceipts ? "default" : "secondary"}
+                  variant={!hasReceipts ? "primary" : "secondary"}
                   className={!hasReceipts ? "shadow-lg shadow-orange-500/25" : ""}
                 >
                   <ReceiptIcon className="mr-1.5 h-5 w-5 text-orange-400" />

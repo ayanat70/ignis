@@ -11,11 +11,11 @@ import {
 const calculateItemSchema = z.object({
   applianceId: z.string().trim().min(1, "applianceId обязателен"),
   hoursPerDay: z
-    .number({ invalid_type_error: "hoursPerDay должно быть числом" })
+    .number()
     .min(0, "hoursPerDay не может быть меньше 0")
     .max(24, "hoursPerDay не может превышать 24"),
   dutyCycle: z
-    .number({ invalid_type_error: "dutyCycle должно быть числом" })
+    .number()
     .min(0, "dutyCycle не может быть меньше 0")
     .max(1, "dutyCycle не может превышать 1")
     .default(1.0),
